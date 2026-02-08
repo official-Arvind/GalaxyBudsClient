@@ -122,6 +122,12 @@
         <Compile Remove="Interface\StyledWindow\**" />
         <Compile Remove="Interface\ViewModels\**" />
 
+        <!-- Remove Avalonia XAML/resource items that would otherwise be processed -->
+        <AvaloniaXaml Remove="Interface\**" />
+        <AvaloniaResource Remove="Interface\**" />
+        <AvaloniaXaml Remove="**\*.axaml" />
+        <AvaloniaResource Remove="**\*.axaml" />
+
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
