@@ -1,5 +1,9 @@
-name: Build Android APK (The Eraser)
+name: Build Android APK
 on: workflow_dispatch
+
+env:
+  DOTNET_VERSION: '8.0'
+  JAVA_VERSION: '17'
 
 jobs:
   build:
@@ -8,64 +12,48 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: THE ERASER (Regex-based Surgery)
-      # We read the file and delete any line that mentions the Linux/Windows/BlueZ projects.
-      - name: Erase Dead Projects
-        run: |
-          # 1. FIX THE PLATFORM LIBRARY (Must be .NET 8)
-          $platPath = "GalaxyBudsClient.Platform/GalaxyBudsClient.Platform.csproj"
-          $platContent = Get-Content $platPath -Raw
-          $platContent = $platContent -replace 'net10\.0', 'net8.0'
-          Set-Content $platPath $platContent
-          Write-Host "Fixed Platform Project."
-
-          # 2. FIX THE MAIN APP
-          $mainPath = "GalaxyBudsClient/GalaxyBudsClient.csproj"
-          $content = Get-Content $mainPath -Raw
-
-          # Regex to remove entire lines containing the forbidden projects
-          # (?m) enables multiline mode so ^ and $ match individual lines
-          $content = $content -replace '(?m)^.*ProjectReference.*(Linux|BlueZNet|MprisClient|Windows|OSX).*$', ''
-          
-          # Force Single Target Android
-          $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
-          
-          # Downgrade EF Core (10.0.1 -> 8.0.8)
-          $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
-          
-          # Downgrade CodeAnalysis (4.14.0 -> 4.5.0) to fix warnings
-          $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
-
-          Set-Content $mainPath $content
-          Write-Host "Erased Forbidden References from Main Project."
-
-      - name: Setup Java 17
+      - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Setup .NET 8
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.404'
+          dotnet-version: ${{ env.DOTNET_VERSION }}.x
 
       - name: Install MAUI Workload
-        run: dotnet workload install maui-android --ignore-failed-sources
+        run: dotnet workload install maui-android --skip-sign-check
 
-      # STEP 2: RESTORE
-      # We verify the restore first.
-      - name: Restore Dependencies
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
+      - name: Clean Solution
+        run: dotnet clean --nologo -v minimal || true
 
-      # STEP 3: BUILD
-      - name: Build APK
+      - name: Restore Dependencies (net8.0-android)
+        run: dotnet restore GalaxyBudsClient.sln -f net8.0-android
+
+      - name: Build Android APK
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj `
+            -f net8.0-android `
+            -c Release `
+            -p:AndroidPackageFormats=apk `
+            -p:IsAndroid=true `
+            --no-restore
 
-      - name: Upload APK
+      - name: Upload APK Artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-APK
-          path: build_out/*-Signed.apk
+          path: GalaxyBudsClient/bin/Release/net8.0-android/*-Signed.apk
+          if-no-files-found: ignore
+
+      - name: Upload App Bundle Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: GalaxyBudsClient-AAB
+          path: GalaxyBudsClient/bin/Release/net8.0-android/*-Signed.aab
+          if-no-files-found: ignore
           

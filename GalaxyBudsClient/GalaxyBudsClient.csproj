@@ -4,6 +4,9 @@
       Otherwise, fall back to net10.0 for Linux and other platforms.
     -->
     <Import Project="Host.props" />
+    <PropertyGroup Condition="'$(IsAndroid)'=='true'">
+        <TargetFramework>net8.0-android36.1</TargetFramework>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
         <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
     </PropertyGroup>
@@ -111,13 +114,18 @@
         <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
         <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.316.1" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
         <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" /> <!-- Needed due to workaround in SettingsData.cs -->
         <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.5.1" PrivateAssets="all" />
+        <!-- Explicit CodeAnalysis versions to resolve transitive dependency conflicts -->
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0" />
         <PackageReference Include="ScottPlot.Avalonia" Version="5.1.57" />
         <PackageReference Include="Sentry" Version="6.0.0" />
         <PackageReference Include="Sentry.Serilog" Version="6.0.0" />
@@ -127,8 +135,8 @@
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
         <PackageReference Include="Serilog.Sinks.Trace" Version="4.0.0" />
         <!-- Workaround: force include SkiaSharp 3.x libraries for Linux; this is already implicitly the case for other platforms -->
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
-        <PackageReference Include="Tmds.DBus" Version="0.21.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" Condition="'$(IsLinux)'=='true'" />
+        <PackageReference Include="Tmds.DBus" Version="0.21.2" Condition="'$(IsLinux)'=='true'" />
     </ItemGroup>
 
 
