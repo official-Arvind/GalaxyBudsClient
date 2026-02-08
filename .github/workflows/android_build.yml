@@ -24,7 +24,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 34
+          packages: 'platforms;android-34'
+          accept-android-sdk-licenses: true
 
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
