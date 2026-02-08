@@ -38,7 +38,7 @@ jobs:
       - name: Build Android APK
         run: |
           dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj `
-            -f net8.0-android `
+            -f net8.0-android34.0 `
             -c Release `
             -p:AndroidPackageFormats=apk `
             --no-restore
