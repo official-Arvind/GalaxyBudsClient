@@ -1,4 +1,4 @@
-name: Build Android APK (CLI Surgeon)
+name: Build Android APK (The Eraser)
 on: workflow_dispatch
 
 jobs:
@@ -7,6 +7,37 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      # STEP 1: THE ERASER (Regex-based Surgery)
+      # We read the file and delete any line that mentions the Linux/Windows/BlueZ projects.
+      - name: Erase Dead Projects
+        run: |
+          # 1. FIX THE PLATFORM LIBRARY (Must be .NET 8)
+          $platPath = "GalaxyBudsClient.Platform/GalaxyBudsClient.Platform.csproj"
+          $platContent = Get-Content $platPath -Raw
+          $platContent = $platContent -replace 'net10\.0', 'net8.0'
+          Set-Content $platPath $platContent
+          Write-Host "Fixed Platform Project."
+
+          # 2. FIX THE MAIN APP
+          $mainPath = "GalaxyBudsClient/GalaxyBudsClient.csproj"
+          $content = Get-Content $mainPath -Raw
+
+          # Regex to remove entire lines containing the forbidden projects
+          # (?m) enables multiline mode so ^ and $ match individual lines
+          $content = $content -replace '(?m)^.*ProjectReference.*(Linux|BlueZNet|MprisClient|Windows|OSX).*$', ''
+          
+          # Force Single Target Android
+          $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
+          
+          # Downgrade EF Core (10.0.1 -> 8.0.8)
+          $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
+          
+          # Downgrade CodeAnalysis (4.14.0 -> 4.5.0) to fix warnings
+          $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
+
+          Set-Content $mainPath $content
+          Write-Host "Erased Forbidden References from Main Project."
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -22,48 +53,12 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 1: CLI SURGERY (Remove References the Official Way)
-      # We use 'dotnet remove reference' to safely unlink the broken projects.
-      - name: Unlink Non-Android Projects
-        run: |
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference GalaxyBudsClient.Platform.Linux/GalaxyBudsClient.Platform.Linux.csproj
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference GalaxyBudsClient.Platform.OSX/GalaxyBudsClient.Platform.OSX.csproj
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference GalaxyBudsClient.Platform.Windows/GalaxyBudsClient.Platform.Windows.csproj
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference GalaxyBudsClient.Platform.WindowsRT/GalaxyBudsClient.Platform.WindowsRT.csproj
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference ThePBone.BlueZNet/ThePBone.BlueZNet.csproj
-          dotnet remove GalaxyBudsClient/GalaxyBudsClient.csproj reference ThePBone.MprisClient/ThePBone.MprisClient.csproj
-        continue-on-error: true
-
-      # STEP 2: TEXT SURGERY (Fix Targets & Versions)
-      - name: Fix Project Files
-        run: |
-          # 1. Fix Platform Library (Force to .NET 8)
-          $platPath = "GalaxyBudsClient.Platform/GalaxyBudsClient.Platform.csproj"
-          (Get-Content $platPath).Replace('net10.0', 'net8.0') | Set-Content $platPath
-          
-          # 2. Fix Main App (Force to Android & Stable Packages)
-          $mainPath = "GalaxyBudsClient/GalaxyBudsClient.csproj"
-          $content = Get-Content $mainPath -Raw
-          
-          # Force Android Target
-          $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
-          
-          # Downgrade EF Core (10.0.1 -> 8.0.8)
-          $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
-          
-          # Downgrade CodeAnalysis to satisfy dependencies (4.14.0 -> 4.5.0)
-          $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
-          
-          Set-Content $mainPath $content
-          Write-Host "Project Files Patched."
-
-      # STEP 3: RESTORE (Targeted)
-      # We explicitly restore ONLY the Main App for Android. 
-      # Since references are gone, it won't look for Linux/Windows.
+      # STEP 2: RESTORE
+      # We verify the restore first.
       - name: Restore Dependencies
         run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
 
-      # STEP 4: BUILD
+      # STEP 3: BUILD
       - name: Build APK
         run: |
           dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
