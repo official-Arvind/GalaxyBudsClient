@@ -1,4 +1,4 @@
-name: Build Android APK (Targeted Strike)
+name: Build Android APK (Total Rewind)
 on: workflow_dispatch
 
 jobs:
@@ -8,32 +8,35 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: PURIFICATION (Remove Dead Weight)
-      - name: Remove Non-Android Projects & References
+      # STEP 1: THE GREAT PURGE (Delete OS-specific junk)
+      - name: Delete Non-Android Folders
         run: |
-          # 1. Delete the actual folders
           Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux, GalaxyBudsClient.Platform.OSX, ThePBone.BlueZNet, ThePBone.MprisClient, GalaxyBudsClient.Platform.Windows, GalaxyBudsClient.Platform.WindowsRT, GalaxyBudsClient.Tests -ErrorAction SilentlyContinue
-          
-          # 2. Open the Main Project File
-          $path = "GalaxyBudsClient/GalaxyBudsClient.csproj"
-          $content = Get-Content $path -Raw
-          
-          # 3. Delete references to the folders we just killed
-          $content = $content -replace '<ProjectReference Include="..\\GalaxyBudsClient.Platform.Linux\\GalaxyBudsClient.Platform.Linux.csproj" />', ''
-          $content = $content -replace '<ProjectReference Include="..\\ThePBone.BlueZNet\\ThePBone.BlueZNet.csproj" />', ''
-          $content = $content -replace '<ProjectReference Include="..\\ThePBone.MprisClient\\ThePBone.MprisClient.csproj" />', ''
-          $content = $content -replace '<ProjectReference Include="..\\GalaxyBudsClient.Platform.Windows\\GalaxyBudsClient.Platform.Windows.csproj" />', ''
-          $content = $content -replace '<ProjectReference Include="..\\GalaxyBudsClient.Platform.WindowsRT\\GalaxyBudsClient.Platform.WindowsRT.csproj" />', ''
 
-          # 4. Force Single Target (Android Only)
-          $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
-          
-          # 5. Downgrade Packages to Stable Versions
-          $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
-          $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
-          
-          Set-Content $path $content
-          Write-Host "Project Purified Successfully."
+      # STEP 2: UNIVERSAL DOWNGRADE (The Fix for 'Project targets net10.0')
+      # This script visits EVERY remaining project and forces it to .NET 8
+      - name: Force Downgrade ALL Projects
+        run: |
+          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
+            $path = $_.FullName
+            $content = Get-Content $path -Raw
+            
+            # 1. Force Target Framework to .NET 8
+            $content = $content -replace 'net10\.0', 'net8.0'
+            
+            # 2. Fix the Package Versions (Downgrade to Stable)
+            $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
+            $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
+            
+            # 3. Remove references to the deleted OS projects (if any remain)
+            $content = $content -replace '<ProjectReference Include="..\\GalaxyBudsClient.Platform.Linux\\GalaxyBudsClient.Platform.Linux.csproj" />', ''
+            $content = $content -replace '<ProjectReference Include="..\\ThePBone.BlueZNet\\ThePBone.BlueZNet.csproj" />', ''
+            $content = $content -replace '<ProjectReference Include="..\\ThePBone.MprisClient\\ThePBone.MprisClient.csproj" />', ''
+            $content = $content -replace '<ProjectReference Include="..\\GalaxyBudsClient.Platform.Windows\\GalaxyBudsClient.Platform.Windows.csproj" />', ''
+
+            Set-Content $path $content
+            Write-Host "Downgraded: $($_.Name)"
+          }
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -49,12 +52,10 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 2: THE FIX (Targeted Restore)
-      # We added -p:TargetFramework=net8.0-android here. This forces it to create the correct assets.
+      # STEP 3: RESTORE & BUILD
       - name: Restore Dependencies
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:CheckEolWorkloads=false
 
-      # STEP 3: BUILD
       - name: Build APK
         run: |
           dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
