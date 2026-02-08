@@ -30,6 +30,13 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: '12266719'
 
+      - name: Accept Android SDK Licenses
+        run: |
+          $sdkPath = "${{ env.ANDROID_SDK_ROOT }}\cmdline-tools\16.0\bin\sdkmanager.bat"
+          if (Test-Path $sdkPath) {
+            "y" | & $sdkPath --licenses 2>&1 | Out-Null
+          }
+
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:

@@ -98,24 +98,24 @@
         <PackageReference Include="AsyncErrorHandler.Fody" Version="1.3.0" />
         <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" />
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-        <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
-        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-        <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" Condition="'$(IsAndroid)'!='true'" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
         <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="$(AvaloniaVersion)" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
-        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.6.2" />
+        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.6.2" Condition="'$(IsAndroid)'!='true'" />
         <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9" />
-        <PackageReference Include="AvaloniaHex" Version="0.1.10" />
+        <PackageReference Include="AvaloniaHex" Version="0.1.10" Condition="'$(IsAndroid)'!='true'" />
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
         <PackageReference Include="CommandLineParser" Version="2.9.2-ci-210" />
         <PackageReference Include="Config.Net" Version="5.2.1" />
-        <PackageReference Include="CS-Script" Version="4.13.0" />
-        <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
-        <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.316.1" />
+        <PackageReference Include="CS-Script" Version="4.13.0" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.316.1" Condition="'$(IsAndroid)'!='true'" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" Condition="'$(IsAndroid)'!='true'">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -123,11 +123,11 @@
         <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" /> <!-- Needed due to workaround in SettingsData.cs -->
         <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.5.1" PrivateAssets="all" />
         <!-- Explicit CodeAnalysis versions to resolve transitive dependency conflicts -->
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0" />
-        <PackageReference Include="ScottPlot.Avalonia" Version="5.1.57" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0" Condition="'$(IsAndroid)'!='true'" />
+        <PackageReference Include="ScottPlot.Avalonia" Version="5.1.57" Condition="'$(IsAndroid)'!='true'" />
         <PackageReference Include="Sentry" Version="6.0.0" />
         <PackageReference Include="Sentry.Serilog" Version="6.0.0" />
         <PackageReference Include="Serilog" Version="4.3.0" />
