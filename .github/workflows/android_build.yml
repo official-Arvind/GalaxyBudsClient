@@ -1,4 +1,4 @@
-name: Build Android APK (PURIFIED)
+name: Build Android APK (Targeted Strike)
 on: workflow_dispatch
 
 jobs:
@@ -8,8 +8,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: PURIFICATION RITUAL
-      # We delete the useless folders AND remove their references from the code.
+      # STEP 1: PURIFICATION (Remove Dead Weight)
       - name: Remove Non-Android Projects & References
         run: |
           # 1. Delete the actual folders
@@ -29,11 +28,10 @@ jobs:
           # 4. Force Single Target (Android Only)
           $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
           
-          # 5. Downgrade Packages to Stable .NET 8 Versions
+          # 5. Downgrade Packages to Stable Versions
           $content = $content -replace 'Version="10\.0\.1"', 'Version="8.0.8"'
           $content = $content -replace 'Version="4\.14\.0"', 'Version="4.5.0"'
           
-          # 6. Save the new "Purified" file
           Set-Content $path $content
           Write-Host "Project Purified Successfully."
 
@@ -51,10 +49,10 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 2: RESTORE
-      # We verify the restore first.
+      # STEP 2: THE FIX (Targeted Restore)
+      # We added -p:TargetFramework=net8.0-android here. This forces it to create the correct assets.
       - name: Restore Dependencies
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:CheckEolWorkloads=false
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
 
       # STEP 3: BUILD
       - name: Build APK
