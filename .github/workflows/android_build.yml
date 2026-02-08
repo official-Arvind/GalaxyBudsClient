@@ -1,4 +1,4 @@
-name: Build Android APK (The Final Stand)
+name: Build Android APK (Exterminator)
 on: workflow_dispatch
 
 jobs:
@@ -8,23 +8,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: GLOBAL OVERRIDE INJECTION
-      # This creates a file that FORCES every project to use net8.0-android 
-      # and blocks the broken .NET 10 preview libraries globally.
-      - name: Inject Global Build Properties
+      # STEP 1: SOLUTION PURGE
+      # We remove the non-Android projects so they stop breaking the restore.
+      - name: Remove Dead Weight Projects
         run: |
-          $props = @"
-          <Project>
-            <PropertyGroup>
-              <TargetFrameworks>net8.0-android</TargetFrameworks>
-              <CheckEolWorkloads>false</CheckEolWorkloads>
-            </PropertyGroup>
-          </Project>
-          "@
-          $props | Set-Content Directory.Build.props
+          dotnet sln GalaxyBudsClient.sln remove GalaxyBudsClient.Platform.Linux/GalaxyBudsClient.Platform.Linux.csproj
+          dotnet sln GalaxyBudsClient.sln remove GalaxyBudsClient.Platform.OSX/GalaxyBudsClient.Platform.OSX.csproj
+          dotnet sln GalaxyBudsClient.sln remove ThePBone.BlueZNet/ThePBone.BlueZNet.csproj
+          dotnet sln GalaxyBudsClient.sln remove ThePBone.MprisClient/ThePBone.MprisClient.csproj
 
-      # STEP 2: PROJECT SURGERY (Deep Clean)
-      - name: Force Downgrade ALL Projects
+      # STEP 2: GLOBAL SURGERY
+      - name: Force Downgrade ALL Projects to .NET 8
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
             (Get-Content $_.FullName) -replace 'net10.0', 'net8.0' -replace '10.0.1', '8.0.8' | Set-Content $_.FullName
@@ -44,9 +38,8 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 3: THE ULTIMATE RESTORE
-      # We force the restore to generate assets for EVERY project for the android target.
-      - name: Global Restore
+      # STEP 3: THE TARGETED RESTORE
+      - name: Restore Android Only
         run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android
 
       # STEP 4: THE BUILD
@@ -57,6 +50,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GalaxyBudsClient-Working-APK
+          name: GalaxyBudsClient-Final-APK
           path: build_out/*.apk
           
