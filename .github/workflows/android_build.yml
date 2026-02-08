@@ -1,37 +1,27 @@
-name: Build Android APK (Nuclear)
-on: [workflow_dispatch]
+name: Build Android APK (Final Fight)
+on: workflow_dispatch
 
 jobs:
-  build-android:
+  build:
     runs-on: windows-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Java JDK 17 (Required for Android)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
-
-      - name: Setup .NET 8 (Force Stable Version)
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+          
+      - name: Install MAUI Workload
+        run: dotnet workload install maui-android
 
-      - name: Install MAUI Workloads
-        run: |
-          dotnet workload install maui --ignore-failed-sources
-          dotnet workload install android --ignore-failed-sources
+      - name: Restore Dependencies (Clean)
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
 
-      - name: Force Restore Dependencies
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android
+      - name: Build and Publish APK
+        run: dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -o build_out
 
-      - name: Build and Sign APK
-        run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -o build_out
-
-      - name: Upload Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-APK
