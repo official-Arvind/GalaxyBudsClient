@@ -1,4 +1,4 @@
-name: Build Android APK (Berserker)
+name: Build Android APK (FINAL CHANCE)
 on: workflow_dispatch
 
 jobs:
@@ -8,27 +8,34 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: SCORCHED EARTH (Deletes everything non-Android)
-      - name: Scorched Earth
-        run: |
-          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux, GalaxyBudsClient.Platform.OSX, ThePBone.BlueZNet, ThePBone.MprisClient, GalaxyBudsClient.Platform.Windows, GalaxyBudsClient.Tests -ErrorAction SilentlyContinue
+      # STEP 1: LOCK THE ENVIRONMENT
+      - name: Force .NET 8 SDK
+        run: echo '{"sdk": {"version": "8.0.400", "rollForward": "latestFeature"}}' > global.json
 
-      # STEP 2: GLOBAL SURGERY (Kill .NET 10 & Disable Warnings-As-Errors)
-      - name: Force Downgrade & Disable Strict Rules
+      # STEP 2: THE MASTER OVERRIDE
+      # This forces EVERY project in the repo to target ONLY Android and 
+      # fixes the package version conflicts (NU1107/NU1605) globally.
+      - name: Inject Master Props
         run: |
-          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            $content = Get-Content $_.FullName
-            $content = $content -replace 'net10.0', 'net8.0'
-            $content = $content -replace '<TreatWarningsAsErrors>true</TreatWarningsAsErrors>', '<TreatWarningsAsErrors>false</TreatWarningsAsErrors>'
-            $content | Set-Content $_.FullName
-          }
-
-      # STEP 3: CONFLICT RESOLUTION (Force Version 4.14.0)
-      - name: Resolve Version Conflicts
-        run: |
-          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.Common -v 4.14.0
-          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp -v 4.14.0
-          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp.Scripting -v 4.14.0
+          $props = @"
+          <Project>
+            <PropertyGroup>
+              <TargetFrameworks>net8.0-android</TargetFrameworks>
+              <TargetFramework>net8.0-android</TargetFramework>
+              <CheckEolWorkloads>false</CheckEolWorkloads>
+              <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+              <Nullable>disable</Nullable>
+            </PropertyGroup>
+            <ItemGroup>
+               <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+               <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
+               <PackageReference Update="Microsoft.CodeAnalysis.Common" Version="4.11.0" />
+               <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+               <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.11.0" />
+            </ItemGroup>
+          </Project>
+          "@
+          $props | Set-Content Directory.Build.props
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -39,22 +46,22 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.400'
 
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 4: FINAL RESTORE & BUILD
-      - name: Global Restore
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false -p:TreatWarningsAsErrors=false
+      # STEP 3: CLEAN RESTORE & BUILD
+      - name: Restore
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
 
-      - name: Final Build
+      - name: Build APK
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -p:TreatWarningsAsErrors=false --no-restore -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:RuntimeIdentifier=android-arm64 -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GalaxyBudsClient-Berserker-APK
+          name: GalaxyBudsClient-FINAL-APK
           path: build_out/*.apk
           
