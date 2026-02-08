@@ -30,7 +30,7 @@ jobs:
         run: dotnet clean --nologo -v minimal || true
 
       - name: Restore Dependencies (net8.0-android)
-        run: dotnet restore GalaxyBudsClient.sln -f net8.0-android
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android
 
       - name: Build Android APK
         run: |

@@ -7,10 +7,11 @@
     <TargetFrameworkVersion>v14.0</TargetFrameworkVersion>
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
     
-    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <AndroidPackageFormats>apk;aab</AndroidPackageFormats>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <TreatEolTargetFrameworkAsWarning>true</TreatEolTargetFrameworkAsWarning>
     
     <DefineConstants>$(DefineConstants);Android</DefineConstants>
   </PropertyGroup>
