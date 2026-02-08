@@ -2,7 +2,7 @@
     <Import Project="../GalaxyBudsClient/Application.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+        <TargetFramework>net10.0</TargetFramework>
         <nullable>enable</nullable>
         <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>

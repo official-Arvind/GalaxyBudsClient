@@ -11,7 +11,7 @@
     <Nullable>enable</Nullable>
     <AndroidPackageFormats>apk;aab</AndroidPackageFormats>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <TreatEolTargetFrameworkAsWarning>true</TreatEolTargetFrameworkAsWarning>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     
     <DefineConstants>$(DefineConstants);Android</DefineConstants>
   </PropertyGroup>

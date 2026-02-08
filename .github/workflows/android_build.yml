@@ -33,15 +33,14 @@ jobs:
         run: dotnet clean --nologo -v minimal || true
 
       - name: Restore Dependencies (net8.0-android)
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android
+        run: dotnet restore GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj
 
       - name: Build Android APK
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj `
+          dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj `
             -f net8.0-android `
             -c Release `
             -p:AndroidPackageFormats=apk `
-            -p:IsAndroid=true `
             --no-restore
 
       - name: Upload APK Artifact
@@ -49,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-APK
-          path: GalaxyBudsClient/bin/Release/net8.0-android/*-Signed.apk
+          path: GalaxyBudsClient.Android/bin/Release/net8.0-android/*-Signed.apk
           if-no-files-found: ignore
 
       - name: Upload App Bundle Artifact
@@ -57,6 +56,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-AAB
-          path: GalaxyBudsClient/bin/Release/net8.0-android/*-Signed.aab
+          path: GalaxyBudsClient.Android/bin/Release/net8.0-android/*-Signed.aab
           if-no-files-found: ignore
           
