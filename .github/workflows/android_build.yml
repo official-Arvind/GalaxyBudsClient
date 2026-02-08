@@ -1,4 +1,4 @@
-name: Build Android APK (Exterminator)
+name: Build Android APK (Scorched Earth)
 on: workflow_dispatch
 
 jobs:
@@ -8,21 +8,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: SOLUTION PURGE
-      # We remove the non-Android projects so they stop breaking the restore.
-      - name: Remove Dead Weight Projects
+      # STEP 1: PHYSICAL DELETION
+      # We delete the actual folders of the non-Android projects so the compiler CANNOT see them.
+      - name: Scorched Earth - Delete Non-Android Folders
         run: |
-          dotnet sln GalaxyBudsClient.sln remove GalaxyBudsClient.Platform.Linux/GalaxyBudsClient.Platform.Linux.csproj
-          dotnet sln GalaxyBudsClient.sln remove GalaxyBudsClient.Platform.OSX/GalaxyBudsClient.Platform.OSX.csproj
-          dotnet sln GalaxyBudsClient.sln remove ThePBone.BlueZNet/ThePBone.BlueZNet.csproj
-          dotnet sln GalaxyBudsClient.sln remove ThePBone.MprisClient/ThePBone.MprisClient.csproj
+          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux
+          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.OSX
+          Remove-Item -Recurse -Force ThePBone.BlueZNet
+          Remove-Item -Recurse -Force ThePBone.MprisClient
+          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Windows
 
-      # STEP 2: GLOBAL SURGERY
-      - name: Force Downgrade ALL Projects to .NET 8
+      # STEP 2: PROJECT SURGERY
+      # Force every remaining .csproj to .NET 8 and block the broken Version 10 packages.
+      - name: Deep Surgery
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
             (Get-Content $_.FullName) -replace 'net10.0', 'net8.0' -replace '10.0.1', '8.0.8' | Set-Content $_.FullName
           }
+
+      # STEP 3: ENVIRONMENT LOCK
+      - name: Force SDK Version 8
+        run: echo '{"sdk":{"version":"8.0.400","rollForward":"latestFeature"}}' > global.json
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -33,19 +39,19 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.400'
 
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 3: THE TARGETED RESTORE
-      - name: Restore Android Only
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android
+      # STEP 4: THE RESTORE & BUILD
+      # We add /p:CheckEolWorkloads=false to EVERY command to stop the 'out of support' errors.
+      - name: Global Restore
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
 
-      # STEP 4: THE BUILD
-      - name: Build and Publish
+      - name: Final Build
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk --no-restore -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
