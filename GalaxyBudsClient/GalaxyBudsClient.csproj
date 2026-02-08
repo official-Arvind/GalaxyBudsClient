@@ -106,7 +106,29 @@
         <Compile Remove="App.axaml.cs" />
         <Compile Remove="Program.cs" />
         <Compile Remove="**\*.axaml" />
+        <!-- Desktop-only UI/tooling not available on Android -->
+        <Compile Remove="Interface\\Controls\\**" />
+        <Compile Remove="Interface\\Dialogs\\**" />
+        <Compile Remove="Interface\\Pages\\**" />
+        <Compile Remove="Interface\\StyledWindow\\**" />
+        <Compile Remove="Interface\\ViewModels\\Developer\\**" />
+        <Compile Remove="Interface\\ViewModels\\Pages\\**" />
+        <Compile Remove="Utils\\Interface\\**" />
+        <Compile Remove="Cli\\Ipc\\**" />
+        <Compile Remove="Cli\\**" />
 
+        <!-- Remove scripting/tooling files that require CSScriptLib on desktop -->
+        <Compile Remove="Scripting\\ScriptManager.cs" />
+        <Compile Remove="Scripting\\Experiment\\ExperimentManager.cs" />
+
+        <!-- Binary editor helpers not available on Android -->
+        <Compile Remove="Model\\InMemoryBinaryDocument.cs" />
+
+        <!-- Remove Avalonia XAML/resource items that would otherwise be processed -->
+        <AvaloniaXaml Remove="Interface\\**" />
+        <AvaloniaResource Remove="Interface\\**" />
+        <AvaloniaXaml Remove="**\\*.axaml" />
+        <AvaloniaResource Remove="**\\*.axaml" />
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
