@@ -1,4 +1,4 @@
-name: Build Android APK (FINAL FINAL)
+name: Build Android APK (FINAL CHANCE)
 on: workflow_dispatch
 
 jobs:
@@ -8,27 +8,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # FIX 1: Fix the PowerShell error from last time by escaping the $
-      - name: Inject Master Props
+      # STEP 1: SOLITARY CONFINEMENT (Nuke the Solution & Dead Weight)
+      - name: Solitary Confinement - Project Surgery
         run: |
-          $props = @"
-          <Project>
-            <PropertyGroup>
-              <TargetFrameworks>net8.0-android</TargetFrameworks>
-              <CheckEolWorkloads>false</CheckEolWorkloads>
-              <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-              <NoWarn>`$(NoWarn);NU1107;NU1605;NETSDK1202</NoWarn>
-            </PropertyGroup>
-            <ItemGroup>
-               <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-               <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
-               <PackageReference Update="Microsoft.CodeAnalysis.Common" Version="4.11.0" />
-               <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
-               <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.11.0" />
-            </ItemGroup>
-          </Project>
-          "@
-          $props | Set-Content Directory.Build.props
+          # Delete the solution file so it stops dragging in other platforms
+          Remove-Item *.sln -ErrorAction SilentlyContinue
+          
+          # Force the main project to be ONLY Android. No multi-targeting allowed.
+          $path = "GalaxyBudsClient/GalaxyBudsClient.csproj"
+          $content = Get-Content $path -Raw
+          $content = $content -replace '<TargetFrameworks>.*?</TargetFrameworks>', '<TargetFramework>net8.0-android</TargetFramework>'
+          $content = $content -replace '<TargetFramework>.*?</TargetFramework>', '<TargetFramework>net8.0-android</TargetFramework>'
+          
+          # Force-lock the database libraries to Version 8.0.8 inside the file
+          $content = $content -replace 'Include="Microsoft.EntityFrameworkCore.Sqlite" Version=".*?"', 'Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8"'
+          $content = $content -replace 'Include="Microsoft.EntityFrameworkCore.Design" Version=".*?"', 'Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8"'
+          
+          $content | Set-Content $path
+          Write-Host "Surgery Complete on GalaxyBudsClient.csproj"
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -39,15 +36,19 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.404'
+          dotnet-version: '8.0.x'
 
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      - name: Restore and Build
+      # STEP 2: THE TARGETED RESTORE
+      - name: Restore
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:CheckEolWorkloads=false
+
+      # STEP 3: THE FINAL BUILD
+      - name: Build and Publish
         run: |
-          dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
-          dotnet build GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
