@@ -1,4 +1,4 @@
-name: Build Android APK (Final Fight)
+name: Build Android APK (God Mode)
 on: workflow_dispatch
 
 jobs:
@@ -7,19 +7,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Setup Java 17 (Required for Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
           
       - name: Install MAUI Workload
-        run: dotnet workload install maui-android
+        run: dotnet workload install maui
 
-      - name: Restore Dependencies (Clean)
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
+      - name: Restore SPECIFICALLY for Android
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj /p:TargetFramework=net8.0-android
 
-      - name: Build and Publish APK
-        run: dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -o build_out
+      - name: Build and Publish
+        run: dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
