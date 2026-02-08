@@ -1,4 +1,4 @@
-name: Build Android APK (Scorched Earth)
+name: Build Android APK (Force Multiplier)
 on: workflow_dispatch
 
 jobs:
@@ -8,27 +8,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: PHYSICAL DELETION
-      # We delete the actual folders of the non-Android projects so the compiler CANNOT see them.
+      # STEP 1: PHYSICAL DELETION (Removing the dead weight)
       - name: Scorched Earth - Delete Non-Android Folders
         run: |
-          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux
-          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.OSX
-          Remove-Item -Recurse -Force ThePBone.BlueZNet
-          Remove-Item -Recurse -Force ThePBone.MprisClient
-          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Windows
+          Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux, GalaxyBudsClient.Platform.OSX, ThePBone.BlueZNet, ThePBone.MprisClient, GalaxyBudsClient.Platform.Windows, GalaxyBudsClient.Tests -ErrorAction SilentlyContinue
 
-      # STEP 2: PROJECT SURGERY
-      # Force every remaining .csproj to .NET 8 and block the broken Version 10 packages.
+      # STEP 2: PROJECT SURGERY (Forcing .NET 8)
       - name: Deep Surgery
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
             (Get-Content $_.FullName) -replace 'net10.0', 'net8.0' -replace '10.0.1', '8.0.8' | Set-Content $_.FullName
           }
 
-      # STEP 3: ENVIRONMENT LOCK
-      - name: Force SDK Version 8
-        run: echo '{"sdk":{"version":"8.0.400","rollForward":"latestFeature"}}' > global.json
+      # STEP 3: CONFLICT RESOLUTION (The Fix for NU1107)
+      # We force-install the common library version that works for both dependencies
+      - name: Resolve Version Conflicts
+        run: |
+          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.Common -v 4.13.0
+          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp -v 4.13.0
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -39,13 +36,12 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.400'
+          dotnet-version: '8.0.x'
 
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 4: THE RESTORE & BUILD
-      # We add /p:CheckEolWorkloads=false to EVERY command to stop the 'out of support' errors.
+      # STEP 4: RESTORE & BUILD
       - name: Global Restore
         run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
 
