@@ -11,6 +11,8 @@ env:
 jobs:
   build:
     runs-on: windows-2022
+    env:
+      ANDROID_SDK_ROOT: C:\\Android\\android-sdk
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -24,8 +26,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platforms;android-34'
+          packages: 'platform-tools;build-tools;34.0.0;platforms;android-34'
           accept-android-sdk-licenses: true
+          cmdline-tools-version: 'latest'
 
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
@@ -38,16 +41,22 @@ jobs:
       - name: Clean Solution
         run: dotnet clean --nologo -v minimal || true
 
-      - name: Restore Dependencies (net8.0-android)
-        run: dotnet restore GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj -p:IsAndroid=true
+      - name: Restore Dependencies (Android)
+        run: |
+          dotnet restore GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj \
+            -p:IsAndroid=true \
+            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% \
+            -p:TargetPlatformVersion=36
 
       - name: Build Android APK
         run: |
-          dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj `
-            -f net8.0-android34.0 `
-            -c Release `
-            -p:IsAndroid=true `
-            -p:AndroidPackageFormats=apk `
+          dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj \
+            -f net10.0-android36.0 \
+            -c Release \
+            -p:IsAndroid=true \
+            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% \
+            -p:TargetPlatformVersion=36 \
+            -p:AndroidPackageFormats=apk \
             --no-restore
 
       - name: Upload APK Artifact
@@ -55,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-APK
-          path: GalaxyBudsClient.Android/bin/Release/net8.0-android34.0/*-Signed.apk
+          path: GalaxyBudsClient.Android/bin/Release/net10.0-android36.0/*-Signed.apk
           if-no-files-found: ignore
 
       - name: Upload App Bundle Artifact
@@ -63,6 +72,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-AAB
-          path: GalaxyBudsClient.Android/bin/Release/net8.0-android34.0/*-Signed.aab
+          path: GalaxyBudsClient.Android/bin/Release/net10.0-android36.0/*-Signed.aab
           if-no-files-found: ignore
           
