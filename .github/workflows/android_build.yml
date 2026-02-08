@@ -3,20 +3,27 @@ on: workflow_dispatch
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - name: Install MAUI
+          
+      - name: Install MAUI Workload
         run: dotnet workload install maui-android
-      - name: Build
-        run: dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -o build_out
-      - name: Upload
+
+      - name: Restore Dependencies
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
+
+      - name: Build APK
+        run: dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -o build_out
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Android-APK
+          name: GalaxyBudsClient-APK
           path: build_out/*.apk
           
