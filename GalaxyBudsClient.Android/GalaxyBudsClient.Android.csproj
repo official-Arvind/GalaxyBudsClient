@@ -6,6 +6,8 @@
     <TargetFramework>net8.0-android34.0</TargetFramework>
     <TargetFrameworkVersion>v14.0</TargetFrameworkVersion>
     <TargetPlatformVersion>34</TargetPlatformVersion>
+    <TargetAndroidVersion>34</TargetAndroidVersion>
+    <AndroidApiLevel>34</AndroidApiLevel>
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
     
     <SupportedOSPlatformVersion>34</SupportedOSPlatformVersion>
