@@ -78,7 +78,7 @@
     </PropertyGroup>
     
     <!-- Resources -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(IsAndroid)'!='true'">
         <AvaloniaResource Include="Resources\**" />
         <AvaloniaResource Include="i18n\*" />
 
@@ -94,10 +94,16 @@
         <None Remove="bin\**" />
     </ItemGroup>
     
-    <!-- Exclude Avalonia resources from Android builds (Android project handles resources) -->
+    <!-- For Android builds, only include essential items -->
     <ItemGroup Condition="'$(IsAndroid)'=='true'">
-        <AvaloniaResource Remove="Resources\**" />
-        <AvaloniaResource Remove="i18n\*" />
+        <Compile Update="**\*.axaml.cs">
+            <DependentUpon>%(Filename)</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+
+        <Compile Remove="bin\**" />
+        <EmbeddedResource Remove="bin\**" />
+        <None Remove="bin\**" />
     </ItemGroup>
     
     <!-- Dependencies -->
