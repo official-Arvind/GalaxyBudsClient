@@ -53,20 +53,20 @@ jobs:
 
       - name: Restore Dependencies (Android)
         run: |
-          dotnet restore GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj \
-            -p:IsAndroid=true \
-            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% \
+          dotnet restore GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj `
+            -p:IsAndroid=true `
+            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% `
             -p:TargetPlatformVersion=36
 
       - name: Build Android APK
         run: |
-          dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj \
-            -f net10.0-android36.0 \
-            -c Release \
-            -p:IsAndroid=true \
-            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% \
-            -p:TargetPlatformVersion=36 \
-            -p:AndroidPackageFormats=apk \
+          dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj `
+            -f net10.0-android36.0 `
+            -c Release `
+            -p:IsAndroid=true `
+            -p:AndroidSdkDirectory=%ANDROID_SDK_ROOT% `
+            -p:TargetPlatformVersion=36 `
+            -p:AndroidPackageFormats=apk `
             --no-restore
 
       - name: Upload APK Artifact
