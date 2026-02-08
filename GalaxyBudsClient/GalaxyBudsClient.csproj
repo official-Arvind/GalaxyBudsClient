@@ -94,40 +94,25 @@
         <None Remove="bin\**" />
     </ItemGroup>
     
-    <!-- For Android builds, only include essential items and exclude desktop-specific code -->
+    <!-- For Android builds: exclude UI and resource files only; keep core model, scripting and utils needed by generators -->
     <ItemGroup Condition="'$(IsAndroid)'=='true'">
         <Compile Update="**\*.axaml.cs">
             <DependentUpon>%(Filename)</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
 
-        <!-- Exclude all desktop/UI specific code -->
-        <Compile Remove="bin\**" />
+        <!-- Exclude UI-only files and resources -->
         <Compile Remove="Resources\**" />
-        <Compile Remove="Interface\**" />
-        <Compile Remove="Utils\Interface\**" />
-        <Compile Remove="Utils\Extensions\ControlExtensions.cs" />
-        <Compile Remove="Utils\Extensions\FilePickerExtensions.cs" />
-        <Compile Remove="Utils\BatteryHistoryManager.cs" />
-        <Compile Remove="Cli\**" />
-        <Compile Remove="Scripting\**" />
-        <Compile Remove="Model\Specifications\IDeviceSpec.cs" />
-        <Compile Remove="Model\Attributes\LocalizableDescriptionAttribute.cs" />
-        <Compile Remove="Model\Config\Settings.cs" />
-        <Compile Remove="Model\InMemoryBinaryDocument.cs" />
-        <Compile Remove="Platform\HotkeyReceiverManager.cs" />
         <Compile Remove="App.axaml.cs" />
         <Compile Remove="Program.cs" />
         <Compile Remove="**\*.axaml" />
-        
-                <ProjectReference Include="..\GalaxyBudsClient.Platform\GalaxyBudsClient.Platform.csproj" />
+
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
         <AndroidResource Remove="Resources\**" />
         <AvaloniaResource Remove="Resources\**" />
         <AvaloniaXaml Remove="Resources\**" />
-        <AvaloniaXaml Remove="Interface\**" />
     </ItemGroup>
     
     <!-- Dependencies -->
@@ -192,11 +177,8 @@
         <ProjectReference Include="..\GalaxyBudsClient.Platform.OSX\GalaxyBudsClient.Platform.OSX.csproj" />
     </ItemGroup>
     
-    <ItemGroup Condition="'$(IsAndroid)'!='true'">
-        <ProjectReference Include="..\GalaxyBudsClient.Platform\GalaxyBudsClient.Platform.csproj" />
-    </ItemGroup>
-
     <ItemGroup>
+        <ProjectReference Include="..\GalaxyBudsClient.Platform\GalaxyBudsClient.Platform.csproj" />
         <ProjectReference Include="..\GalaxyBudsClient.Generators\GalaxyBudsClient.Generators.csproj">
             <OutputItemType>Analyzer</OutputItemType>
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
