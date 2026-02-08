@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-APK
-          path: GalaxyBudsClient.Android/bin/Release/net8.0-android/*-Signed.apk
+          path: GalaxyBudsClient.Android/bin/Release/net8.0-android34.0/*-Signed.apk
           if-no-files-found: ignore
 
       - name: Upload App Bundle Artifact
@@ -56,6 +56,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GalaxyBudsClient-AAB
-          path: GalaxyBudsClient.Android/bin/Release/net8.0-android/*-Signed.aab
+          path: GalaxyBudsClient.Android/bin/Release/net8.0-android34.0/*-Signed.aab
           if-no-files-found: ignore
           

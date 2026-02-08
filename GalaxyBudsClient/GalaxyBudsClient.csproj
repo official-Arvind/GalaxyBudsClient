@@ -5,7 +5,10 @@
     -->
     <Import Project="Host.props" />
     <PropertyGroup Condition="'$(IsAndroid)'=='true'">
-        <TargetFramework>net8.0-android36.1</TargetFramework>
+        <TargetFramework>net8.0-android34.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <DefineConstants>$(DefineConstants);Android</DefineConstants>
+        <SupportedOSPlatformVersion>34</SupportedOSPlatformVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
         <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
@@ -35,10 +38,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(IsLinux)'=='true'">
         <OutputType>Exe</OutputType>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(IsAndroid)'=='true'">
-        <OutputType>Library</OutputType>
-        <DefineConstants>$(DefineConstants);Android</DefineConstants>
     </PropertyGroup>
     
     <Import Project="Application.props" />
