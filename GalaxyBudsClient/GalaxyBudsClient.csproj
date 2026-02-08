@@ -120,6 +120,7 @@
         <Compile Remove="Program.cs" />
         <Compile Remove="**\*.axaml" />
         
+                <ProjectReference Include="..\GalaxyBudsClient.Platform\GalaxyBudsClient.Platform.csproj" />
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
