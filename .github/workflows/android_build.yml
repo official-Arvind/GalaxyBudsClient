@@ -33,6 +33,12 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: '12266719'
 
+      - name: Accept Android SDK Licenses (non-interactive)
+        shell: powershell
+        run: |
+          $sdkmanager = Join-Path $env:ANDROID_SDK_ROOT 'cmdline-tools\16.0\bin\sdkmanager.bat'
+          1..100 | ForEach-Object { 'y' } | & $sdkmanager --licenses
+
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
