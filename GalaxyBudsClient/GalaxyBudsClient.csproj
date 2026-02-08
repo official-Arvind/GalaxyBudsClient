@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!--
-      Multi-target to support Windows, macOS, Linux, and Android.
-      Android: net8.0-android34.0
-      Windows: net10.0-windows10.0.19041
-      macOS: net10.0-macos
-      Linux/Generic: net10.0
+      Use an OS-specific TargetFramework to make use of platform-specific APIs on Windows and macOS.
+      Otherwise, fall back to net10.0 for Linux and other platforms.
+      For Android builds, target net8.0-android34.0
     -->
     <Import Project="Host.props" />
-    
-    <!-- Default to multi-target build -->
-    <PropertyGroup>
-        <TargetFrameworks>net8.0-android34.0;net10.0-windows10.0.19041;net10.0-macos;net10.0</TargetFrameworks>
-    </PropertyGroup>
-    
-    <!-- Override if IsAndroid variable is set (for explicit Android builds) -->
     <PropertyGroup Condition="'$(IsAndroid)'=='true'">
         <TargetFramework>net8.0-android34.0</TargetFramework>
         <OutputType>Library</OutputType>
         <DefineConstants>$(DefineConstants);Android</DefineConstants>
         <SupportedOSPlatformVersion>34</SupportedOSPlatformVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
+        <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(_HostIsOSX)'=='true' And '$(IsAndroid)'!='true'">
+        <TargetFramework>net10.0-macos</TargetFramework>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)'==''">
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <!-- Detect target platform -->
