@@ -6,10 +6,10 @@
     -->
     <Import Project="Host.props" />
     <PropertyGroup Condition="'$(IsAndroid)'=='true'">
-        <TargetFramework>net8.0-android34.0</TargetFramework>
+        <TargetFramework>net10.0-android36.0</TargetFramework>
         <OutputType>Library</OutputType>
         <DefineConstants>$(DefineConstants);Android</DefineConstants>
-        <SupportedOSPlatformVersion>34</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion>36</SupportedOSPlatformVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
         <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
