@@ -1,5 +1,8 @@
 name: Build Android APK
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - master
 
 env:
   DOTNET_VERSION: '8.0'
