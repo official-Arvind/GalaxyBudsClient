@@ -1,4 +1,4 @@
-name: Build Android APK (Total Isolation)
+name: Build Android APK (The Final Stand)
 on: workflow_dispatch
 
 jobs:
@@ -8,16 +8,26 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: GLOBAL SURGERY
-      # This hunts down EVERY project file and forces it to .NET 8
+      # STEP 1: GLOBAL OVERRIDE INJECTION
+      # This creates a file that FORCES every project to use net8.0-android 
+      # and blocks the broken .NET 10 preview libraries globally.
+      - name: Inject Global Build Properties
+        run: |
+          $props = @"
+          <Project>
+            <PropertyGroup>
+              <TargetFrameworks>net8.0-android</TargetFrameworks>
+              <CheckEolWorkloads>false</CheckEolWorkloads>
+            </PropertyGroup>
+          </Project>
+          "@
+          $props | Set-Content Directory.Build.props
+
+      # STEP 2: PROJECT SURGERY (Deep Clean)
       - name: Force Downgrade ALL Projects
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            $content = Get-Content $_.FullName
-            $content = $content -replace 'net10.0', 'net8.0'
-            $content = $content -replace '10.0.1', '8.0.8'
-            $content | Set-Content $_.FullName
-            Write-Host "Fixed: $($_.Name)"
+            (Get-Content $_.FullName) -replace 'net10.0', 'net8.0' -replace '10.0.1', '8.0.8' | Set-Content $_.FullName
           }
 
       - name: Setup Java 17
@@ -34,21 +44,19 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 2: CLEAN & RESTORE
-      # We force a fresh start to clear out any leftover 'net10.0' junk
-      - name: Clean and Restore
-        run: |
-          dotnet clean GalaxyBudsClient/GalaxyBudsClient.csproj
-          dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
+      # STEP 3: THE ULTIMATE RESTORE
+      # We force the restore to generate assets for EVERY project for the android target.
+      - name: Global Restore
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android
 
-      # STEP 3: THE ANDROID-ONLY BUILD
+      # STEP 4: THE BUILD
       - name: Build and Publish
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk --no-restore -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GalaxyBudsClient-Final-APK
+          name: GalaxyBudsClient-Working-APK
           path: build_out/*.apk
           
