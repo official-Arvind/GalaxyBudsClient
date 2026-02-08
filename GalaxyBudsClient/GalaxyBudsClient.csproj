@@ -10,6 +10,7 @@
         <OutputType>Library</OutputType>
         <DefineConstants>$(DefineConstants);Android</DefineConstants>
         <SupportedOSPlatformVersion>36</SupportedOSPlatformVersion>
+        <NoAndroidResourcesDirectory>true</NoAndroidResourcesDirectory>
     </PropertyGroup>
     <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
         <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
@@ -91,6 +92,12 @@
         <AvaloniaXaml Remove="bin\**" />
         <EmbeddedResource Remove="bin\**" />
         <None Remove="bin\**" />
+    </ItemGroup>
+    
+    <!-- Exclude Avalonia resources from Android builds (Android project handles resources) -->
+    <ItemGroup Condition="'$(IsAndroid)'=='true'">
+        <AvaloniaResource Remove="Resources\**" />
+        <AvaloniaResource Remove="i18n\*" />
     </ItemGroup>
     
     <!-- Dependencies -->
