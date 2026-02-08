@@ -1,4 +1,4 @@
-name: Build Android APK (FINAL)
+name: Build Android APK (FINAL FINAL)
 on: workflow_dispatch
 
 jobs:
@@ -8,12 +8,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: FORCE THE SDK (Banish .NET 10)
-      - name: Create global.json
-        run: echo '{"sdk":{"version":"8.0.404","rollForward":"latestFeature"}}' > global.json
-
-      # STEP 2: MASTER OVERRIDE (Fixes NU1107 and NU1202)
-      # This file forces EVERY sub-project to use the exact same versions.
+      # FIX 1: Fix the PowerShell error from last time by escaping the $
       - name: Inject Master Props
         run: |
           $props = @"
@@ -22,7 +17,7 @@ jobs:
               <TargetFrameworks>net8.0-android</TargetFrameworks>
               <CheckEolWorkloads>false</CheckEolWorkloads>
               <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-              <NoWarn>$(NoWarn);NU1107;NU1605;NETSDK1202</NoWarn>
+              <NoWarn>`$(NoWarn);NU1107;NU1605;NETSDK1202</NoWarn>
             </PropertyGroup>
             <ItemGroup>
                <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
@@ -49,7 +44,6 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 3: THE CLEAN BUILD
       - name: Restore and Build
         run: |
           dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj
