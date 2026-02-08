@@ -1,4 +1,4 @@
-name: Build Android APK (Total Annihilation)
+name: Build Android APK (Total Isolation)
 on: workflow_dispatch
 
 jobs:
@@ -8,8 +8,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: GLOBAL SURGERY (Recurse and Destroy)
-      # This finds EVERY .csproj file in EVERY folder and swaps 10.0 for 8.0
+      # STEP 1: GLOBAL SURGERY
+      # This hunts down EVERY project file and forces it to .NET 8
       - name: Force Downgrade ALL Projects
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
@@ -34,11 +34,14 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 2: FORCE RESTORE
-      - name: Restore
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
+      # STEP 2: CLEAN & RESTORE
+      # We force a fresh start to clear out any leftover 'net10.0' junk
+      - name: Clean and Restore
+        run: |
+          dotnet clean GalaxyBudsClient/GalaxyBudsClient.csproj
+          dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
 
-      # STEP 3: THE FINAL BUILD
+      # STEP 3: THE ANDROID-ONLY BUILD
       - name: Build and Publish
         run: |
           dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
