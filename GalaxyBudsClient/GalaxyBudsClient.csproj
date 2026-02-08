@@ -105,9 +105,20 @@
         <Compile Remove="bin\**" />
         <Compile Remove="Resources\**" />
         <Compile Remove="Interface\**" />
-        <Compile Remove="Cli\**" />
         <Compile Remove="Utils\Interface\**" />
         <Compile Remove="Utils\Extensions\ControlExtensions.cs" />
+        <Compile Remove="Utils\Extensions\FilePickerExtensions.cs" />
+        <Compile Remove="Utils\BatteryHistoryManager.cs" />
+        <Compile Remove="Cli\**" />
+        <Compile Remove="Scripting\**" />
+        <Compile Remove="Model\Specifications\IDeviceSpec.cs" />
+        <Compile Remove="Model\Attributes\LocalizableDescriptionAttribute.cs" />
+        <Compile Remove="Model\Config\Settings.cs" />
+        <Compile Remove="Model\InMemoryBinaryDocument.cs" />
+        <Compile Remove="Platform\HotkeyReceiverManager.cs" />
+        <Compile Remove="App.axaml.cs" />
+        <Compile Remove="Program.cs" />
+        <Compile Remove="**\*.axaml" />
         
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
