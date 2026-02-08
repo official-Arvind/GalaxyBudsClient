@@ -94,21 +94,28 @@
         <None Remove="bin\**" />
     </ItemGroup>
     
-    <!-- For Android builds, only include essential items and exclude resources -->
+    <!-- For Android builds, only include essential items and exclude desktop-specific code -->
     <ItemGroup Condition="'$(IsAndroid)'=='true'">
         <Compile Update="**\*.axaml.cs">
             <DependentUpon>%(Filename)</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
 
+        <!-- Exclude all desktop/UI specific code -->
         <Compile Remove="bin\**" />
         <Compile Remove="Resources\**" />
+        <Compile Remove="Interface\**" />
+        <Compile Remove="Cli\**" />
+        <Compile Remove="Utils\Interface\**" />
+        <Compile Remove="Utils\Extensions\ControlExtensions.cs" />
+        
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
         <AndroidResource Remove="Resources\**" />
         <AvaloniaResource Remove="Resources\**" />
         <AvaloniaXaml Remove="Resources\**" />
+        <AvaloniaXaml Remove="Interface\**" />
     </ItemGroup>
     
     <!-- Dependencies -->
