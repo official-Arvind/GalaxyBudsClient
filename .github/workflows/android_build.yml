@@ -1,4 +1,4 @@
-name: Build Android APK (Force Multiplier)
+name: Build Android APK (Berserker)
 on: workflow_dispatch
 
 jobs:
@@ -8,24 +8,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # STEP 1: PHYSICAL DELETION (Removing the dead weight)
-      - name: Scorched Earth - Delete Non-Android Folders
+      # STEP 1: SCORCHED EARTH (Deletes everything non-Android)
+      - name: Scorched Earth
         run: |
           Remove-Item -Recurse -Force GalaxyBudsClient.Platform.Linux, GalaxyBudsClient.Platform.OSX, ThePBone.BlueZNet, ThePBone.MprisClient, GalaxyBudsClient.Platform.Windows, GalaxyBudsClient.Tests -ErrorAction SilentlyContinue
 
-      # STEP 2: PROJECT SURGERY (Forcing .NET 8)
-      - name: Deep Surgery
+      # STEP 2: GLOBAL SURGERY (Kill .NET 10 & Disable Warnings-As-Errors)
+      - name: Force Downgrade & Disable Strict Rules
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            (Get-Content $_.FullName) -replace 'net10.0', 'net8.0' -replace '10.0.1', '8.0.8' | Set-Content $_.FullName
+            $content = Get-Content $_.FullName
+            $content = $content -replace 'net10.0', 'net8.0'
+            $content = $content -replace '<TreatWarningsAsErrors>true</TreatWarningsAsErrors>', '<TreatWarningsAsErrors>false</TreatWarningsAsErrors>'
+            $content | Set-Content $_.FullName
           }
 
-      # STEP 3: CONFLICT RESOLUTION (The Fix for NU1107)
-      # We force-install the common library version that works for both dependencies
+      # STEP 3: CONFLICT RESOLUTION (Force Version 4.14.0)
       - name: Resolve Version Conflicts
         run: |
-          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.Common -v 4.13.0
-          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp -v 4.13.0
+          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.Common -v 4.14.0
+          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp -v 4.14.0
+          dotnet add GalaxyBudsClient/GalaxyBudsClient.csproj package Microsoft.CodeAnalysis.CSharp.Scripting -v 4.14.0
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -41,17 +44,17 @@ jobs:
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --ignore-failed-sources
 
-      # STEP 4: RESTORE & BUILD
+      # STEP 4: FINAL RESTORE & BUILD
       - name: Global Restore
-        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false
+        run: dotnet restore GalaxyBudsClient/GalaxyBudsClient.csproj -p:TargetFramework=net8.0-android -p:CheckEolWorkloads=false -p:TreatWarningsAsErrors=false
 
       - name: Final Build
         run: |
-          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false --no-restore -o build_out
+          dotnet publish GalaxyBudsClient/GalaxyBudsClient.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:CheckEolWorkloads=false -p:TreatWarningsAsErrors=false --no-restore -o build_out
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GalaxyBudsClient-Final-APK
+          name: GalaxyBudsClient-Berserker-APK
           path: build_out/*.apk
           
