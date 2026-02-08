@@ -107,6 +107,21 @@
         <Compile Remove="Program.cs" />
         <Compile Remove="**\*.axaml" />
 
+        <!-- Also exclude desktop-only UI, tooling and IPC code that depends on FluentAvalonia, FluentIcons,
+             ScottPlot, AvaloniaHex, Tmds.DBus, CSScript, etc. These packages are not available for Android builds
+             and cause compile failures if the source is included. -->
+        <Compile Remove="Interface\**" />
+        <Compile Remove="Cli\**" />
+        <Compile Remove="Scripting\**" />
+        <Compile Remove="Utils\Extensions\ControlExtensions.cs" />
+        <Compile Remove="Model\InMemoryBinaryDocument.cs" />
+        <Compile Remove="Interface\Controls\**" />
+        <Compile Remove="Interface\Dialogs\**" />
+        <Compile Remove="Interface\Developer\**" />
+        <Compile Remove="Interface\Pages\**" />
+        <Compile Remove="Interface\StyledWindow\**" />
+        <Compile Remove="Interface\ViewModels\**" />
+
         <EmbeddedResource Remove="bin\**" />
         <EmbeddedResource Remove="Resources\**" />
         <None Remove="bin\**" />
