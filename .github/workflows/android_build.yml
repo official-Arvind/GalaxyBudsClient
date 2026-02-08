@@ -28,7 +28,7 @@ jobs:
         with:
           packages: 'platform-tools;build-tools;34.0.0;platforms;android-34'
           accept-android-sdk-licenses: true
-          cmdline-tools-version: 'latest'
+          cmdline-tools-version: '12266719'
 
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
