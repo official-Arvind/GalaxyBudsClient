@@ -33,17 +33,29 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: '12266719'
 
-      - name: Accept Android SDK Licenses
-        run: |
-          $sdkPath = "${{ env.ANDROID_SDK_ROOT }}\cmdline-tools\16.0\bin\sdkmanager.bat"
-          if (Test-Path $sdkPath) {
-            "y" | & $sdkPath --licenses 2>&1 | Out-Null
-          }
-
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}.x
+
+      - name: Verify Android SDK
+        shell: cmd
+        run: |
+          setlocal enabledelayedexpansion
+          set SDKROOT=${{ env.ANDROID_SDK_ROOT }}
+          echo Checking Android SDK at: !SDKROOT!
+          if exist "!SDKROOT!\platforms\android-34" (
+            echo ✓ android-34 platform found
+          ) else (
+            echo ✗ android-34 platform NOT found
+            dir "!SDKROOT!\platforms" || echo No platforms directory
+          )
+          if exist "!SDKROOT!\build-tools\34.0.0" (
+            echo ✓ build-tools 34.0.0 found
+          ) else (
+            echo ✗ build-tools 34.0.0 NOT found  
+            dir "!SDKROOT!\build-tools" || echo No build-tools directory
+          )
 
       - name: Install MAUI Workload
         run: dotnet workload install maui-android --skip-sign-check
