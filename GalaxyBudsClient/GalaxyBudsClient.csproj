@@ -1,17 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <!--
       Use an OS-specific TargetFramework to make use of platform-specific APIs on Windows and macOS.
-      Otherwise, fall back to net10.0 for Linux and other platforms.
+      Otherwise, fall back to net8.0 for Linux and other platforms.
     -->
     <Import Project="Host.props" />
     <PropertyGroup Condition="'$(_HostIsWindows)'=='true' And '$(IsAndroid)'!='true'">
-        <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
+        <TargetFramework>net8.0-windows10.0.19041</TargetFramework>
     </PropertyGroup>
     <PropertyGroup Condition="'$(_HostIsOSX)'=='true' And '$(IsAndroid)'!='true'">
-        <TargetFramework>net10.0-macos</TargetFramework>
+        <TargetFramework>net8.0-macos</TargetFramework>
     </PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)'==''">
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <!-- Detect target platform -->
