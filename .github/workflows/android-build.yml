@@ -1,0 +1,34 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install Android Workload
+      run: dotnet workload install android
+
+    - name: Build Android App
+      run: dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj -c Release /p:AndroidPackageFormat=apk /p:AndroidCreatePackagePerAbi=false
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      with:
+        tag_name: "android-build-${{ github.run_number }}"
+        name: "Android Build #${{ github.run_number }}"
+        files: GalaxyBudsClient.Android/bin/Release/**/*-Signed.apk

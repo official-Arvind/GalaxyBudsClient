@@ -195,3 +195,6 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMA
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+## A Note on this Fork
+Sorry to the original developer for bypassing the Play Store and distributing this compiled version for free. Thank you immensely for your incredible hard work in building this tool and keeping it open-source. All credit for the actual codebase and logic belongs entirely to Tim Schneeberger.
