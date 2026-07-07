@@ -20,7 +20,7 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Install Android Workload
-      run: dotnet workload install android
+      run: dotnet workload install android --ignore-failed-sources
 
     - name: Build Android App
       run: dotnet publish GalaxyBudsClient.Android/GalaxyBudsClient.Android.csproj -c Release /p:AndroidPackageFormat=apk /p:AndroidCreatePackagePerAbi=false
@@ -31,4 +31,4 @@ jobs:
       with:
         tag_name: "android-build-${{ github.run_number }}"
         name: "Android Build #${{ github.run_number }}"
-        files: GalaxyBudsClient.Android/bin/Release/**/*-Signed.apk
+        files: GalaxyBudsClient.Android/bin/Release/**/*.apk
