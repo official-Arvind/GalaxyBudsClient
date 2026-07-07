@@ -13,6 +13,7 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     
     <DefineConstants>$(DefineConstants);Android</DefineConstants>
+    <AndroidKeyStore>false</AndroidKeyStore>
   </PropertyGroup>
 
   <PropertyGroup>
